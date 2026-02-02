@@ -610,3 +610,20 @@ ipcMain.handle('open-browser', (event, toolName) => {
     }
   });
 });
+
+// 应用退出时清理所有工具进程
+app.on('quit', () => {
+  console.log('应用退出，清理所有工具进程');
+  
+  // 停止所有运行中的工具进程
+  for (const toolName in toolProcesses) {
+    if (toolProcesses.hasOwnProperty(toolName)) {
+      try {
+        console.log('停止工具进程:', toolName);
+        toolProcesses[toolName].kill();
+      } catch (error) {
+        console.log('停止工具进程失败:', toolName, error);
+      }
+    }
+  }
+});
