@@ -177,8 +177,16 @@ ipcMain.handle('update-ip', (event, toolName, ipSource) => {
     
     if (!fs.existsSync(wgetPath)) {
       console.log('wget.exe不存在，尝试复制');
-      // 尝试从项目根目录复制wget.exe
-      const sourceWget = path.join(__dirname, '..', 'wget.exe');
+      // 尝试从资源目录复制wget.exe
+      let sourceWget;
+      if (app.isPackaged) {
+        // 打包环境
+        sourceWget = path.join(process.resourcesPath, 'wget.exe');
+      } else {
+        // 开发环境
+        sourceWget = path.join(__dirname, '..', 'wget.exe');
+      }
+      
       if (fs.existsSync(sourceWget)) {
         try {
           fs.copyFileSync(sourceWget, wgetPath);
@@ -189,7 +197,7 @@ ipcMain.handle('update-ip', (event, toolName, ipSource) => {
           return;
         }
       } else {
-        console.log('wget.exe源文件不存在');
+        console.log('wget.exe源文件不存在:', sourceWget);
         reject(new Error('wget.exe不存在'));
         return;
       }
