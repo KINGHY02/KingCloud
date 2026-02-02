@@ -272,6 +272,38 @@ $(document).ready(function() {
         $('#disclaimer-content').removeClass('show');
       }
     });
+
+    // 联系方式链接点击处理
+    $(document).on('click', '.contact-link', function(e) {
+      e.preventDefault(); // 阻止默认链接行为
+      const url = $(this).attr('href');
+      console.log('打开联系方式链接:', url);
+      
+      // 使用内部Chrome打开链接
+      // 这里我们需要一个工具来打开链接，选择clash.meta作为默认工具
+      window.api.openBrowser('clash.meta').then(() => {
+        console.log('浏览器已打开');
+        // 延迟一下，确保浏览器已经启动
+        setTimeout(() => {
+          // 使用系统命令打开链接
+          if (typeof window.api.openUrl === 'function') {
+            // 如果主进程提供了openUrl方法
+            window.api.openUrl(url).catch(error => {
+              console.error('打开链接失败:', error);
+              // 失败时使用系统默认浏览器
+              window.open(url, '_blank');
+            });
+          } else {
+            // 否则使用系统默认浏览器
+            window.open(url, '_blank');
+          }
+        }, 1000);
+      }).catch(error => {
+        console.error('打开浏览器失败:', error);
+        // 失败时使用系统默认浏览器
+        window.open(url, '_blank');
+      });
+    });
   }
 
   // 初始化应用

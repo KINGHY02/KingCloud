@@ -17,5 +17,8 @@ contextBridge.exposeInMainWorld('api', {
   checkToolStatus: (toolName) => ipcRenderer.invoke('check-tool-status', toolName),
   
   // 打开浏览器
-  openBrowser: (toolName) => ipcRenderer.invoke('open-browser', toolName)
+  openBrowser: (toolName) => ipcRenderer.invoke('open-browser', toolName),
+  
+  // 打开链接
+  openUrl: (url) => ipcRenderer.invoke('open-url', url)
 });

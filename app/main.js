@@ -533,6 +533,40 @@ ipcMain.handle('check-tool-status', (event, toolName) => {
   });
 });
 
+// 打开链接
+ipcMain.handle('open-url', (event, url) => {
+  return new Promise((resolve, reject) => {
+    console.log('打开链接:', url);
+    
+    try {
+      // 构建资源路径
+      let resourcesPath;
+      if (app.isPackaged) {
+        // 打包环境
+        resourcesPath = process.resourcesPath;
+      } else {
+        // 开发环境
+        resourcesPath = path.join(__dirname, '..');
+      }
+      
+      // 使用start chrome命令打开链接，确保使用内部Chrome
+      const { exec } = require('child_process');
+      exec(`start chrome "${url}"`, (error, stdout, stderr) => {
+        if (error) {
+          console.log('打开链接失败:', error);
+          reject(new Error('打开链接失败'));
+        } else {
+          console.log('链接已打开');
+          resolve({ success: true });
+        }
+      });
+    } catch (error) {
+      console.log('打开链接异常:', error);
+      reject(new Error('打开链接异常'));
+    }
+  });
+});
+
 // 打开浏览器
 ipcMain.handle('open-browser', (event, toolName) => {
   return new Promise((resolve, reject) => {
