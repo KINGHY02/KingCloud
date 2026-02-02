@@ -140,122 +140,33 @@ ipcMain.handle('get-tools', () => {
 // 更新IP
 ipcMain.handle('update-ip', (event, toolName, ipSource) => {
   return new Promise((resolve, reject) => {
+    console.log('=== IP更新开始 ===');
     console.log('更新IP:', toolName, ipSource);
+    console.log('打包状态:', app.isPackaged);
     
-    // 构建脚本路径
-    let scriptPath;
-    if (app.isPackaged) {
-      // 打包环境
-      const resourcesPath = process.resourcesPath;
-      scriptPath = path.join(resourcesPath, 'clash.meta', 'ip_Update', `ip_${ipSource}.bat`);
-    } else {
-      // 开发环境
-      scriptPath = path.join(__dirname, '..', 'clash.meta', 'ip_Update', `ip_${ipSource}.bat`);
-    }
-    
-    console.log('IP更新脚本路径:', scriptPath);
-    
-    // 检查脚本是否存在
-    if (!fs.existsSync(scriptPath)) {
-      console.log('IP更新脚本不存在:', scriptPath);
-      reject(new Error('IP更新脚本不存在'));
-      return;
-    }
-    
-    // 检查wget.exe是否存在
-    let wgetPath;
-    if (app.isPackaged) {
-      // 打包环境
-      const resourcesPath = process.resourcesPath;
-      wgetPath = path.join(resourcesPath, 'wget.exe');
-    } else {
-      // 开发环境
-      wgetPath = path.join(__dirname, '..', 'wget.exe');
-    }
-    
-    console.log('wget.exe路径:', wgetPath);
-    
-    if (!fs.existsSync(wgetPath)) {
-      console.log('wget.exe不存在，尝试复制');
-      // 尝试从资源目录复制wget.exe
-      let sourceWget;
+    try {
+      // 构建资源路径
+      let resourcesPath;
       if (app.isPackaged) {
         // 打包环境
-        sourceWget = path.join(process.resourcesPath, 'wget.exe');
+        resourcesPath = process.resourcesPath;
+        console.log('打包环境资源路径:', resourcesPath);
       } else {
         // 开发环境
-        sourceWget = path.join(__dirname, '..', 'wget.exe');
+        resourcesPath = path.join(__dirname, '..');
+        console.log('开发环境资源路径:', resourcesPath);
       }
       
-      if (fs.existsSync(sourceWget)) {
-        try {
-          fs.copyFileSync(sourceWget, wgetPath);
-          console.log('wget.exe复制成功');
-        } catch (error) {
-          console.log('wget.exe复制失败:', error);
-          reject(new Error('wget.exe复制失败'));
-          return;
-        }
-      } else {
-        console.log('wget.exe源文件不存在:', sourceWget);
-        reject(new Error('wget.exe不存在'));
+      // 确保资源路径存在
+      if (!fs.existsSync(resourcesPath)) {
+        console.log('资源路径不存在:', resourcesPath);
+        reject(new Error('IP更新失败，资源路径不存在'));
         return;
       }
-    }
-    
-    // 确保wget.exe有执行权限
-    try {
-      fs.chmodSync(wgetPath, 0o755);
-      console.log('wget.exe权限设置成功');
-    } catch (error) {
-      console.log('wget.exe权限设置失败:', error);
-      // 权限设置失败不阻止执行，继续尝试
-    }
-    
-    // 直接执行IP更新逻辑，避免使用脚本中的交互命令
-    console.log('开始执行IP更新逻辑');
-    
-    try {
-      // 获取IP源
-      const scriptFileName = path.basename(scriptPath);
-      const ipSource = scriptFileName.split('ip_')[1].split('.bat')[0];
-      console.log('脚本文件名:', scriptFileName);
-      console.log('IP源:', ipSource);
       
-      // 定义下载链接（从脚本中提取）
-      const downloadUrls = [
-        `https://www.gitlabip.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/${ipSource}/config.yaml`,
-        `https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/${ipSource}/config.yaml`
-      ];
-      
-      console.log('下载链接:', downloadUrls);
-      
-      // 确保目录存在
-      const ipUpdateDir = path.dirname(scriptPath);
-      console.log('IP更新目录:', ipUpdateDir);
-      
-      if (!fs.existsSync(ipUpdateDir)) {
-        console.log('IP更新目录不存在，尝试创建');
-        try {
-          fs.mkdirSync(ipUpdateDir, { recursive: true });
-          console.log('IP更新目录创建成功');
-        } catch (error) {
-          console.log('IP更新目录创建失败:', error);
-          reject(new Error('IP更新失败，无法创建目录'));
-          return;
-        }
-      }
-      
-      // 目标配置文件路径
-      const clashMetaDir = path.join(ipUpdateDir, '..');
-      const configPath = path.join(clashMetaDir, 'config.yaml');
-      const tempConfigPath = path.join(ipUpdateDir, 'config.yaml');
-      const backupPath = path.join(clashMetaDir, 'config.yaml_backup');
-      
+      // 构建clash.meta目录路径
+      const clashMetaDir = path.join(resourcesPath, 'clash.meta');
       console.log('clash.meta目录:', clashMetaDir);
-      console.log('配置文件路径:', configPath);
-      console.log('临时配置文件路径:', tempConfigPath);
-      console.log('备份配置文件路径:', backupPath);
       
       // 确保clash.meta目录存在
       if (!fs.existsSync(clashMetaDir)) {
@@ -265,10 +176,64 @@ ipcMain.handle('update-ip', (event, toolName, ipSource) => {
           console.log('clash.meta目录创建成功');
         } catch (error) {
           console.log('clash.meta目录创建失败:', error);
-          reject(new Error('IP更新失败，无法创建目录'));
+          reject(new Error('IP更新失败，无法创建clash.meta目录'));
           return;
         }
       }
+      
+      // 构建ip_Update目录路径
+      const ipUpdateDir = path.join(clashMetaDir, 'ip_Update');
+      console.log('IP更新目录:', ipUpdateDir);
+      
+      // 确保ip_Update目录存在
+      if (!fs.existsSync(ipUpdateDir)) {
+        console.log('ip_Update目录不存在，尝试创建');
+        try {
+          fs.mkdirSync(ipUpdateDir, { recursive: true });
+          console.log('ip_Update目录创建成功');
+        } catch (error) {
+          console.log('ip_Update目录创建失败:', error);
+          reject(new Error('IP更新失败，无法创建ip_Update目录'));
+          return;
+        }
+      }
+      
+      // 构建wget.exe路径
+      let wgetPath = path.join(resourcesPath, 'wget.exe');
+      console.log('wget.exe路径:', wgetPath);
+      
+      // 检查wget.exe是否存在
+      if (!fs.existsSync(wgetPath)) {
+        console.log('wget.exe不存在');
+        reject(new Error('IP更新失败，wget.exe不存在'));
+        return;
+      }
+      
+      // 确保wget.exe有执行权限
+      try {
+        fs.chmodSync(wgetPath, 0o755);
+        console.log('wget.exe权限设置成功');
+      } catch (error) {
+        console.log('wget.exe权限设置失败:', error);
+        // 权限设置失败不阻止执行，继续尝试
+      }
+      
+      // 定义下载链接
+      const downloadUrls = [
+        `https://www.gitlabip.xyz/Alvin9999/PAC/refs/heads/master/backup/img/1/2/ipp/clash.meta2/${ipSource}/config.yaml`,
+        `https://gitlab.com/free9999/ipupdate/-/raw/master/backup/img/1/2/ipp/clash.meta2/${ipSource}/config.yaml`
+      ];
+      
+      console.log('下载链接:', downloadUrls);
+      
+      // 目标配置文件路径
+      const configPath = path.join(clashMetaDir, 'config.yaml');
+      const tempConfigPath = path.join(ipUpdateDir, 'config.yaml');
+      const backupPath = path.join(clashMetaDir, 'config.yaml_backup');
+      
+      console.log('配置文件路径:', configPath);
+      console.log('临时配置文件路径:', tempConfigPath);
+      console.log('备份配置文件路径:', backupPath);
       
       // 尝试从链接下载配置文件
       let currentUrlIndex = 0;
@@ -294,145 +259,158 @@ ipcMain.handle('update-ip', (event, toolName, ipSource) => {
           }
         }
         
-        // 使用绝对路径的wget.exe下载
+        // 使用wget.exe下载
         console.log('使用wget.exe路径:', wgetPath);
         
-        const child = spawn(wgetPath, ['-t', '2', '--no-check-certificate', url, '-O', tempConfigPath], {
-          stdio: 'pipe',
-          timeout: 30000
-        });
-        
-        let stdout = '';
-        let stderr = '';
-        
-        child.stdout.on('data', (data) => {
-          stdout += data.toString();
-        });
-        
-        child.stderr.on('data', (data) => {
-          stderr += data.toString();
-        });
-        
-        child.on('error', (error) => {
-          console.log(`下载错误 (${url}):`, error);
-          currentUrlIndex++;
-          tryDownload();
-        });
-        
-        child.on('exit', (code) => {
-          console.log(`下载完成 (${url})，退出码:`, code);
-          console.log('stdout:', stdout);
-          console.log('stderr:', stderr);
+        try {
+          const child = spawn(wgetPath, ['-t', '2', '--no-check-certificate', url, '-O', tempConfigPath], {
+            stdio: 'pipe',
+            timeout: 30000
+          });
           
-          if (code === 0 && fs.existsSync(tempConfigPath)) {
-            // 检查文件大小
-            const fileStats = fs.statSync(tempConfigPath);
-            console.log('下载的文件大小:', fileStats.size, '字节');
+          let stdout = '';
+          let stderr = '';
+          
+          child.stdout.on('data', (data) => {
+            stdout += data.toString();
+          });
+          
+          child.stderr.on('data', (data) => {
+            stderr += data.toString();
+          });
+          
+          child.on('error', (error) => {
+            console.log(`下载错误 (${url}):`, error);
+            currentUrlIndex++;
+            tryDownload();
+          });
+          
+          child.on('exit', (code) => {
+            console.log(`下载完成 (${url})，退出码:`, code);
+            console.log('stdout:', stdout);
+            console.log('stderr:', stderr);
             
-            if (fileStats.size === 0) {
-              console.log('下载的文件为空，尝试下一个链接');
-              currentUrlIndex++;
-              tryDownload();
-              return;
-            }
-            
-            // 下载成功
-            console.log('下载成功，开始复制配置文件');
-            
-            try {
-              // 备份旧配置文件
-              if (fs.existsSync(configPath)) {
-                console.log('旧配置文件存在，准备备份');
-                if (fs.existsSync(backupPath)) {
-                  try {
-                    fs.unlinkSync(backupPath);
-                    console.log('旧备份文件已删除');
-                  } catch (error) {
-                    console.log('删除旧备份文件失败:', error);
-                  }
-                }
-                try {
-                  fs.renameSync(configPath, backupPath);
-                  console.log('旧配置文件已备份');
-                } catch (error) {
-                  console.log('备份旧配置文件失败:', error);
-                  // 继续执行，不阻止更新
-                }
-              }
+            if (code === 0 && fs.existsSync(tempConfigPath)) {
+              // 检查文件大小
+              const fileStats = fs.statSync(tempConfigPath);
+              console.log('下载的文件大小:', fileStats.size, '字节');
               
-              // 复制新配置文件
-              try {
-                fs.copyFileSync(tempConfigPath, configPath);
-                console.log('新配置文件已复制');
-              } catch (error) {
-                console.log('复制新配置文件失败:', error);
-                reject(new Error('IP更新失败，无法复制配置文件'));
+              if (fileStats.size === 0) {
+                console.log('下载的文件为空，尝试下一个链接');
+                currentUrlIndex++;
+                tryDownload();
                 return;
               }
               
-              // 删除临时文件
-              try {
-                fs.unlinkSync(tempConfigPath);
-                console.log('临时文件已删除');
-              } catch (error) {
-                console.log('删除临时文件失败:', error);
-                // 继续执行，不阻止更新
-              }
+              // 下载成功
+              console.log('下载成功，开始复制配置文件');
               
-              // 检查工具是否在运行，如果是则重启
-              if (toolProcesses[toolName]) {
-                console.log('工具正在运行，准备重启:', toolName);
-                try {
-                  toolProcesses[toolName].kill();
-                  console.log('工具已停止:', toolName);
-                  
-                  // 延迟启动工具
-                  setTimeout(() => {
-                    startTool(toolName).then(() => {
-                      console.log('工具重启成功:', toolName);
-                      resolve({ success: true, message: 'IP更新成功，工具已重启' });
-                    }).catch((error) => {
-                      console.log('工具重启失败:', error);
-                      resolve({ success: true, message: 'IP更新成功，但工具重启失败' });
-                    });
-                  }, 1000);
-                } catch (error) {
-                  console.log('工具停止失败:', error);
-                  resolve({ success: true, message: 'IP更新成功，但工具重启失败' });
+              try {
+                // 备份旧配置文件
+                if (fs.existsSync(configPath)) {
+                  console.log('旧配置文件存在，准备备份');
+                  if (fs.existsSync(backupPath)) {
+                    try {
+                      fs.unlinkSync(backupPath);
+                      console.log('旧备份文件已删除');
+                    } catch (error) {
+                      console.log('删除旧备份文件失败:', error);
+                    }
+                  }
+                  try {
+                    fs.renameSync(configPath, backupPath);
+                    console.log('旧配置文件已备份');
+                  } catch (error) {
+                    console.log('备份旧配置文件失败:', error);
+                    // 继续执行，不阻止更新
+                  }
                 }
-              } else {
-                resolve({ success: true, message: 'IP更新成功' });
+                
+                // 复制新配置文件
+                try {
+                  fs.copyFileSync(tempConfigPath, configPath);
+                  console.log('新配置文件已复制');
+                } catch (error) {
+                  console.log('复制新配置文件失败:', error);
+                  reject(new Error('IP更新失败，无法复制配置文件'));
+                  return;
+                }
+                
+                // 删除临时文件
+                try {
+                  fs.unlinkSync(tempConfigPath);
+                  console.log('临时文件已删除');
+                } catch (error) {
+                  console.log('删除临时文件失败:', error);
+                  // 继续执行，不阻止更新
+                }
+                
+                // 检查工具是否在运行，如果是则重启
+                if (toolProcesses[toolName]) {
+                  console.log('工具正在运行，准备重启:', toolName);
+                  try {
+                    toolProcesses[toolName].kill();
+                    console.log('工具已停止:', toolName);
+                    
+                    // 延迟启动工具
+                    setTimeout(() => {
+                      startTool(toolName).then(() => {
+                        console.log('工具重启成功:', toolName);
+                        console.log('=== IP更新完成 ===');
+                        resolve({ success: true, message: 'IP更新成功，工具已重启' });
+                      }).catch((error) => {
+                        console.log('工具重启失败:', error);
+                        console.log('=== IP更新完成 ===');
+                        resolve({ success: true, message: 'IP更新成功，但工具重启失败' });
+                      });
+                    }, 1000);
+                  } catch (error) {
+                    console.log('工具停止失败:', error);
+                    console.log('=== IP更新完成 ===');
+                    resolve({ success: true, message: 'IP更新成功，但工具重启失败' });
+                  }
+                } else {
+                  // 工具未运行，直接返回成功
+                  console.log('=== IP更新完成 ===');
+                  resolve({ success: true, message: 'IP更新成功' });
+                }
+              } catch (error) {
+                console.log('配置文件处理失败:', error);
+                console.log('=== IP更新失败 ===');
+                reject(new Error('IP更新失败，配置文件处理错误'));
               }
-            } catch (error) {
-              console.log('配置文件处理失败:', error);
-              reject(new Error('IP更新失败，配置文件处理错误'));
+            } else {
+              // 下载失败，尝试下一个链接
+              console.log('下载失败，尝试下一个链接');
+              currentUrlIndex++;
+              tryDownload();
             }
-          } else {
-            // 下载失败，尝试下一个链接
-            console.log('下载失败，尝试下一个链接');
+          });
+          
+          // 添加超时处理
+          const timeout = setTimeout(() => {
+            console.log(`下载超时 (${url})`);
+            child.kill();
             currentUrlIndex++;
             tryDownload();
-          }
-        });
-        
-        // 添加超时处理
-        const timeout = setTimeout(() => {
-          console.log(`下载超时 (${url})`);
-          child.kill();
+          }, 30000);
+          
+          child.on('exit', () => {
+            clearTimeout(timeout);
+          });
+        } catch (error) {
+          console.log('wget执行失败:', error);
           currentUrlIndex++;
           tryDownload();
-        }, 30000);
-        
-        child.on('exit', () => {
-          clearTimeout(timeout);
-        });
+        }
       }
       
       // 开始下载
       tryDownload();
     } catch (error) {
-      console.log('IP更新逻辑执行错误:', error);
-      reject(new Error('IP更新失败，内部错误'));
+      console.log('IP更新初始化错误:', error);
+      console.log('=== IP更新失败 ===');
+      reject(new Error('IP更新失败，初始化错误'));
     }
   });
 });
