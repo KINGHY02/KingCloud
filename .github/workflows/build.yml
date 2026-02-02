@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -29,33 +32,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
           draft: false
           prerelease: false
-
-      - name: Upload Setup Installer
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/KingCloud Setup 1.0.0.exe
-          asset_name: KingCloud Setup 1.0.0.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
-
-      - name: Upload Portable Version
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/KingCloud 1.0.0.exe
-          asset_name: KingCloud 1.0.0.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+          files:
+            - ./dist/KingCloud Setup 1.0.0.exe
+            - ./dist/KingCloud 1.0.0.exe
