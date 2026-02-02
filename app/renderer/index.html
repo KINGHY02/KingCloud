@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KingCloud</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+      <div class="logo">
+        <img src="../../icons/KiNG.ico" alt="KingCloud">
+        <h1>KingCloud</h1>
+      </div>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="btn-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <button id="help-btn" class="btn-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <path d="M12 17h.01"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <!-- 左侧边栏 -->
+      <aside class="side-nav">
+        <h2>代理工具</h2>
+        <ul id="tool-list" class="tool-list">
+          <!-- 工具列表将通过JavaScript动态生成 -->
+        </ul>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="content">
+        <div id="tool-detail" class="tool-detail">
+          <div class="tool-header">
+            <h2 id="tool-name">请选择一个工具</h2>
+            <div class="tool-status" id="tool-status">
+              <span class="status-indicator offline"></span>
+              <span>未运行</span>
+            </div>
+          </div>
+
+          <div class="tool-actions">
+            <div class="ip-update-section">
+              <h3>IP更新</h3>
+              <p>更新IP地址以获取最新的代理配置</p>
+              <div class="ip-buttons">
+                <button class="btn-ip" data-index="1">IP 1</button>
+                <button class="btn-ip" data-index="2">IP 2</button>
+                <button class="btn-ip" data-index="3">IP 3</button>
+                <button class="btn-ip" data-index="4">IP 4</button>
+                <button class="btn-ip" data-index="5">IP 5</button>
+                <button class="btn-ip" data-index="6">IP 6</button>
+              </div>
+              <div id="ip-update-status" class="status-message"></div>
+            </div>
+
+            <div class="tool-controls">
+              <h3>工具控制</h3>
+              <div class="control-buttons">
+                <button id="start-btn" class="btn-primary">
+                  <img src="../../icons/start.png" alt="启动"> 启动
+                </button>
+                <button id="stop-btn" class="btn-secondary">
+                  <img src="../../icons/stop.png" alt="停止"> 停止
+                </button>
+                <button id="open-browser-btn" class="btn-secondary">
+                  <img src="../../icons/browser.png" alt="浏览器"> 打开浏览器
+                </button>
+              </div>
+              <div id="tool-status-message" class="status-message"></div>
+            </div>
+          </div>
+
+          <div class="tool-info">
+            <h3>工具信息</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>配置文件:</label>
+                <span id="config-file">-</span>
+              </div>
+              <div class="info-item">
+                <label>代理端口:</label>
+                <span id="proxy-port">-</span>
+              </div>
+              <div class="info-item">
+                <label>代理类型:</label>
+                <span id="proxy-type">-</span>
+              </div>
+              <div class="info-item">
+                <label>状态:</label>
+                <span id="status-text">未运行</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <footer class="bottom-bar">
+      <div class="status-info">
+        <span id="system-status">系统状态: 正常</span>
+        <span id="network-status">网络状态: 已连接</span>
+      </div>
+      <div class="legal-info">
+        <div class="copyright">
+          <p>© 2026 KingCloud v1.0.0</p>
+        </div>
+        <div class="contact-info">
+          <a href="https://github.com/KINGHY02" target="_blank" class="contact-link">
+            <img src="../../icons/github.png" alt="GitHub" class="contact-icon">
+          </a>
+          <a href="https://t.me/+O3RCFlFQsg1mNDk1" target="_blank" class="contact-link">
+            <img src="../../icons/telegram.png" alt="Telegram" class="contact-icon">
+          </a>
+        </div>
+        <div class="disclaimer">
+          <button id="disclaimer-btn" class="disclaimer-btn">免责声明</button>
+          <div id="disclaimer-content" class="disclaimer-content">
+            <h4>法律免责声明</h4>
+            <p>本软件仅用于学术交流和技术研究目的，旨在促进网络技术的学习与发展。</p>
+            <p>使用本软件时，用户应遵守所在国家和地区的法律法规，不得用于任何非法用途。</p>
+            <p>禁止以任何形式贩卖、分发或商业化使用本软件，包括但不限于出售、出租、许可或作为商业服务的一部分。</p>
+            <p>本软件的开发者不对用户使用本软件所产生的任何法律责任负责，包括但不限于因违反法律法规而导致的任何损失或损害。</p>
+            <p>用户应自行承担使用本软件的风险，开发者不保证软件的安全性、可靠性或适用性。</p>
+            <p>通过使用本软件，用户即表示同意本免责声明的所有条款和条件。</p>
+            <button id="close-disclaimer" class="close-disclaimer">关闭</button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 加载动画 -->
+  <div id="loading" class="loading">
+    <div class="loading-spinner"></div>
+    <p>加载中...</p>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

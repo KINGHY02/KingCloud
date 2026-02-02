@@ -1,0 +1,33 @@
+# 构建产物
+dist/
+win-unpacked/
+
+# 依赖项
+node_modules/
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+
+# 缓存文件
+.cache/
+.vscode/
+.idea/
+
+# 操作系统文件
+Thumbs.db
+.DS_Store
+
+# 配置文件备份
+*_backup
+
+# 批处理文件临时产物
+**/ip_Update/*.bat
+
+# 其他不需要版本控制的文件
+.env
+*.pem
+*.key
