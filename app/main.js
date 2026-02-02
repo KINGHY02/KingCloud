@@ -473,8 +473,11 @@ function startTool(toolName) {
         // Clash.Meta需要指定工作目录
         let cwd;
         if (app.isPackaged) {
-          cwd = path.join(path.dirname(app.getAppPath()), 'clash.meta');
+          // 打包环境
+          const resourcesPath = process.resourcesPath;
+          cwd = path.join(resourcesPath, 'clash.meta');
         } else {
+          // 开发环境
           cwd = path.join(__dirname, '..', 'clash.meta');
         }
         console.log('Clash.Meta工作目录:', cwd);
