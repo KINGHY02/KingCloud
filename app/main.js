@@ -146,7 +146,7 @@ ipcMain.handle('update-ip', (event, toolName, ipSource) => {
     let scriptPath;
     if (app.isPackaged) {
       // 打包环境
-      const resourcesPath = path.dirname(app.getAppPath());
+      const resourcesPath = process.resourcesPath;
       scriptPath = path.join(resourcesPath, 'clash.meta', 'ip_Update', `ip_${ipSource}.bat`);
     } else {
       // 开发环境
@@ -165,8 +165,11 @@ ipcMain.handle('update-ip', (event, toolName, ipSource) => {
     // 检查wget.exe是否存在
     let wgetPath;
     if (app.isPackaged) {
-      wgetPath = path.join(path.dirname(app.getAppPath()), 'wget.exe');
+      // 打包环境
+      const resourcesPath = process.resourcesPath;
+      wgetPath = path.join(resourcesPath, 'wget.exe');
     } else {
+      // 开发环境
       wgetPath = path.join(__dirname, '..', 'wget.exe');
     }
     
@@ -439,7 +442,7 @@ function startTool(toolName) {
     let toolPath;
     if (app.isPackaged) {
       // 打包环境
-      const resourcesPath = path.dirname(app.getAppPath());
+      const resourcesPath = process.resourcesPath;
       toolPath = path.join(resourcesPath, tool.path);
     } else {
       // 开发环境
@@ -558,7 +561,7 @@ ipcMain.handle('open-browser', (event, toolName) => {
     let projectRoot;
     if (app.isPackaged) {
       // 打包环境 - 额外资源在resources目录中
-      projectRoot = path.dirname(app.getAppPath());
+      projectRoot = process.resourcesPath;
     } else {
       // 开发环境
       projectRoot = path.join(__dirname, '..');
