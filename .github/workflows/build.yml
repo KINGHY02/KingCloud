@@ -41,6 +41,6 @@ jobs:
           release_name: Release v${{ github.run_number }}
           draft: false
           prerelease: false
-          files:
-            - ./dist/KingCloud Setup 1.0.0.exe
-            - ./dist/KingCloud 1.0.0.exe
+          files: |
+            ./dist/KingCloud Setup 1.0.0.exe
+            ./dist/KingCloud 1.0.0.exe
